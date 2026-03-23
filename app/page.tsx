@@ -50,7 +50,7 @@ export default function Dashboard() {
 
   const pollSession = useCallback((signalId: string, sessionId: string) => {
     let attempts = 0
-    const maxAttempts = 30 // 5 minutes
+    const maxAttempts = 12 // 2 minutes
 
     const interval = setInterval(async () => {
       attempts++
