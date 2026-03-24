@@ -30,6 +30,23 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [loading, setLoading] = useState(true)
 
+  const loadIssues = useCallback(() => {
+    fetch('/api/issues')
+      .then(r => r.json())
+      .then((issues: GitHubIssue[]) => {
+        const ghSignals = issues.map(issueToSignal)
+        setSignals(prev => {
+          const nonGh = prev.filter(s => s.source !== 'github-issue')
+          return [...ghSignals, ...nonGh]
+        })
+        setLoading(false)
+      })
+      .catch(() => {
+        setSignals([...staticTechDebt, ...staticDocDrift])
+        setLoading(false)
+      })
+  }, [])
+
   useEffect(() => {
     fetch('/api/issues')
       .then(r => r.json())
@@ -50,7 +67,7 @@ export default function Dashboard() {
 
   const pollSession = useCallback((signalId: string, sessionId: string) => {
     let attempts = 0
-    const maxAttempts = 12 // 2 minutes
+    const maxAttempts = 12
 
     const interval = setInterval(async () => {
       attempts++
@@ -109,7 +126,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <Header />
+      <Header onScanComplete={loadIssues} />
       <main className="max-w-5xl mx-auto px-6 py-10">
         <Stats counts={counts} />
 
